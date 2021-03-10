@@ -12,6 +12,7 @@ fun main(args: Array<String>) {
     val write = buildJsonObject {
         put("runtime_id", args[1].toInt())
         buildTop(this, inputContent, args[3].toInt() > 0)
+        putJsonArray("versioning") { }
     }
     outputFile.writeText(write.toString())
 }
