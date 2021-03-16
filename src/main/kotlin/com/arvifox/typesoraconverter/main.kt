@@ -9,6 +9,7 @@ import kotlinx.serialization.json.JsonObjectBuilder
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.add
 import kotlinx.serialization.json.addJsonArray
+import kotlinx.serialization.json.addJsonObject
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.jsonPrimitive
 import kotlinx.serialization.json.put
@@ -16,6 +17,14 @@ import kotlinx.serialization.json.putJsonArray
 import kotlinx.serialization.json.putJsonObject
 import java.io.File
 
+private val nullValue: Boolean? = null
+
+/**
+ * arg 0 - input file path
+ * arg 1 - runtime id
+ * arg 2 - output file name
+ * arg 3 - [0 - no custom types], [1 - add custom types]
+ */
 fun main(args: Array<String>) {
     println("Hello World!")
 //    File("//").walkTopDown().forEach {
@@ -26,8 +35,15 @@ fun main(args: Array<String>) {
     val inputContent = inputFile.readText()
     val write = buildJsonObject {
         put("runtime_id", args[1].toInt())
-        buildTop(this, inputContent, args[3].toInt() > 0)
-        putJsonArray("versioning") { }
+        putJsonArray("versioning") {
+            addJsonObject {
+                this.putJsonArray("runtime_range") {
+                    this.add(1)
+                    this.add(nullValue)
+                }
+                buildTop(this, inputContent, args[3].toInt() > 0)
+            }
+        }
     }
     outputFile.writeText(write.toString())
 }
@@ -37,6 +53,8 @@ private fun buildTop(builder: JsonObjectBuilder, inputContent: String, addCustom
         if (addCustom) {
             put("String", "Text")
             put("FixedU128", "u128")
+            put("U256", "u256")
+            put("SessionKeys2", "(AccountId, AccountId)")
         }
         val tree = Json.parseToJsonElement(inputContent)
         if (tree is JsonObject) {
